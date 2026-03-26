@@ -1,0 +1,38 @@
+//plugins {
+//    id 'org.graalvm.buildtools.native'
+//}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    implementation project(':domain')
+    implementation project(':rest')
+    implementation project(':port')
+}
+
+test {
+    useJUnitPlatform()
+}
+
+springBoot {
+    // Replace with the ACTUAL package path to your @SpringBootApplication class
+    mainClass = "org.afflato.app.ExchangeratesApplication"
+}
+
+bootJar {
+    enabled = true
+    archiveBaseName = "exchangerates"
+}
+
+//graalvmNative {
+//    binaries {
+//        main {
+//            imageName = 'exchangerates'
+//            mainClass = 'o.afflato.app.ExchangeratesApplication' // Your full package name
+//            buildArgs.add('--verbose')
+//            buildArgs.add('--static') // Crucial since you are using the muslib image
+//            buildArgs.add('--libc=musl')
+//        }
+//    }
+//}

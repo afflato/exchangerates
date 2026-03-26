@@ -1,0 +1,90 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '4.0.3'
+	id 'io.spring.dependency-management' version '1.1.7'
+	//id 'org.graalvm.buildtools.native' version '0.11.4'
+    id 'org.graalvm.buildtools.native' version '0.10.4' apply false
+}
+
+group = 'org.afflato'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(25)
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+//plugins {
+//    id 'org.springframework.boot' version '4.0.3' apply false
+//}
+
+bootJar {
+    enabled = false
+}
+jar { enabled = true }
+
+subprojects {
+    apply plugin: "java"
+    apply plugin: "org.springframework.boot"
+    apply plugin: "io.spring.dependency-management"
+    //apply plugin: "org.graalvm.buildtools.native"
+
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        implementation 'org.springframework.boot:spring-boot'
+//        implementation 'org.springframework.boot:spring-boot-starter-actuator'
+        implementation 'org.springframework.boot:spring-boot-starter-web'
+        compileOnly 'org.projectlombok:lombok'
+        annotationProcessor 'org.projectlombok:lombok'
+        testImplementation 'org.springframework.boot:spring-boot-starter-actuator-test'
+        testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+        testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    }
+
+    tasks.named('test') {
+        useJUnitPlatform()
+    }
+
+    if (project.name != 'app') { // Assuming your boot module is named 'app'
+        tasks.named('bootJar') { enabled = false }
+        tasks.named('bootRun') { enabled = false }
+        // This is the critical one for your error!
+        if (tasks.findByName('processAot')) {
+            tasks.named('processAot') { enabled = false }
+        }
+    }
+
+}
+
+tasks.withType(org.springframework.boot.gradle.tasks.aot.ProcessAot).configureEach {
+    enabled = false
+}
+
+tasks.register('runSmokeTest', Test) {
+    group 'verification'
+    description = 'Runs all tests from the smoke-test module.'
+    dependsOn ':smoke-test:test'
+}
+
+// Inside the subprojects block, or specifically for the app project:
+//project(':app') {
+//    graalvmNative {
+//        binaries {
+//            main {
+//                mainClass = 'org.afflato.app.ExchangeratesApplication'
+//                imageName = 'exchangerates'
+//                fallback = false
+//            }
+//        }
+//    }
+//}
+
+
