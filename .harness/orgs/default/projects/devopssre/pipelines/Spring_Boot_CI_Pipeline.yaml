@@ -35,6 +35,8 @@ pipeline:
                   name: Build
                   identifier: Build
                   spec:
+                    connectorRef: docker
+                    image: amazoncorretto:25-alpine
                     shell: Sh
                     command: |-
                       # 1. Fix permissions (crucial for Cloud Runners)
@@ -50,6 +52,8 @@ pipeline:
                   name: Sonar Scan
                   identifier: Sonar_Scan
                   spec:
+                    connectorRef: docker
+                    image: amazoncorretto:25-alpine
                     shell: Sh
                     command: |-
                       set -e
