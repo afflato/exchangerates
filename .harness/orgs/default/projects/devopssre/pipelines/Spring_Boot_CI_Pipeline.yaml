@@ -115,9 +115,9 @@ pipeline:
                       whoami
                       pwd
 
-                      echo "--- 2. Directory Structure (Recursive) ---"
-                      # This will show us exactly where 'k8chart' lives
-                      ls -R /harness
+                      # echo "--- 2. Directory Structure (Recursive) ---"
+                      # # This will show us exactly where 'k8chart' lives
+                      # ls -R /harness
 
                       echo "--- 3. Checking for Git Repository ---"
                       if [ -d "/harness/.git" ]; then
@@ -146,6 +146,9 @@ pipeline:
                       # Configure and Commit
                       git config --global user.email "afflato-bot-ci@afflato.com"
                       git config --global user.name "afflato-bot-ci"
+
+                      export GIT_PAT=<+secrets.getValue("token_classic")>
+                      git remote set-url origin https://afflato:${GIT_PAT}@github.com/afflato/exchangerates.git
 
                       git add "$YAML_PATH"
                       git commit -m "chore: update image tag to ${IMAGE_TAG} [skip ci]" || echo "No changes to commit"
