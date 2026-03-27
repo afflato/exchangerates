@@ -1,0 +1,14 @@
+inputSet:
+  pipeline:
+    identifier: Spring_Boot_CI_Pipeline
+    properties:
+      ci:
+        codebase:
+          build:
+            spec:
+              branch: ""
+            type: branch
+  name: build-pipeline
+  identifier: buildpipeline
+  orgIdentifier: default
+  projectIdentifier: devopssre
