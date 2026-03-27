@@ -1,3 +1,8 @@
+plugins {
+    id 'java'
+    id 'jacoco-report-aggregation'
+}
+
 dependencies {
     implementation project(':app')
     implementation project(':domain')
@@ -8,6 +13,16 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
+    jacocoAggregation project(':domain')
+
+}
+
+reporting {
+    reports {
+        testCodeCoverageReport(JacocoCoverageReport) {
+            testSuiteName = "test"
+        }
+    }
 }
 
 bootJar {
