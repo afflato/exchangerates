@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "k8chart.fullname" . }}
+  name: exchangerates-svc
   labels:
     {{- include "k8chart.labels" . | nindent 4 }}
 spec:
