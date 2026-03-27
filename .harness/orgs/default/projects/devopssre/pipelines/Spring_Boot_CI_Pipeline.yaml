@@ -100,7 +100,7 @@ pipeline:
                     connectorRef: docker
                     repo: afflato/exchangerates
                     tags:
-                      - <+codebase.shortCommitSha>
+                      - <+codebase.commitSha>.substring(0,7)
               - step:
                   type: Run
                   name: Update Image Tag
@@ -127,7 +127,7 @@ pipeline:
                       fi
                       # -------------------------
 
-                      export IMAGE_TAG=<+codebase.shortCommitSha>
+                      export IMAGE_TAG=<+codebase.commitSha>.substring(0,7)
 
                       # Find the file dynamically
                       YAML_PATH=$(find /harness -name "values.yaml" | grep "k8chart" | head -n 1)
