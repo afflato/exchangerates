@@ -1,0 +1,157 @@
+pipeline:
+  name: Spring Boot CI Pipeline
+  identifier: Spring_Boot_CI_Pipeline
+  projectIdentifier: devopssre
+  orgIdentifier: default
+  tags: {}
+  properties:
+    ci:
+      codebase:
+        connectorRef: github_classic
+        build: <+input>
+  stages:
+    - stage:
+        name: Code Pull And Build
+        identifier: Code_Pull_And_Build
+        description: ""
+        type: CI
+        spec:
+          cloneCodebase: true
+          caching:
+            enabled: true
+            override: true
+          buildIntelligence:
+            enabled: true
+          platform:
+            os: Linux
+            arch: Amd64
+          runtime:
+            type: Cloud
+            spec: {}
+          execution:
+            steps:
+              - step:
+                  type: Run
+                  name: Build
+                  identifier: Build
+                  spec:
+                    connectorRef: docker
+                    image: amazoncorretto:25-alpine
+                    shell: Sh
+                    command: |-
+                      # 1. Fix permissions (crucial for Cloud Runners)
+                      chmod +x gradlew
+
+                      # 2. Verify Java version (helps you debug if it fails again)
+                      java -version
+
+                      # 3. Run build with a memory limit to avoid 'Killed' errors
+                      ./gradlew clean build -Dorg.gradle.jvmargs="-Xmx2g"
+              - step:
+                  type: Run
+                  name: Sonar Scan
+                  identifier: Sonar_Scan
+                  spec:
+                    connectorRef: docker
+                    image: amazoncorretto:25-alpine
+                    shell: Sh
+                    command: |-
+                      set -e
+
+                      # 1. Updated Init Script with the correct class reference
+                      cat <<EOF > sonar-init.gradle
+                      initscript {
+                          repositories {
+                              maven { url "https://plugins.gradle.org/m2/" }
+                          }
+                          dependencies {
+                              // Version 7.x is required for Gradle 9.x compatibility
+                              classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:7.0.1.6134"
+                          }
+                      }
+
+                      allprojects {
+                          // We apply it using the class name to ensure it loads in the init scope
+                          apply plugin: org.sonarqube.gradle.SonarQubePlugin
+                      }
+                      EOF
+
+                      # 2. Run your tests
+                      chmod +x gradlew
+                      ./gradlew clean test --continue
+
+                      # 3. Run sonar AND point to the init script (The missing piece)
+                      ./gradlew sonar \
+                        --init-script sonar-init.gradle \
+                        --info \
+                        --stacktrace \
+                        -Dsonar.projectKey=<+secrets.getValue("sonar_project_key")> \
+                        -Dsonar.organization=<+secrets.getValue("sonar_org")> \
+                        -Dsonar.host.url=https://sonarcloud.io \
+                        -Dsonar.token=<+secrets.getValue("sonar_token")> \
+                        -Dsonar.java.source=25 \
+                        -Dsonar.java.target=25 \
+                        -Dsonar.scm.provider=git
+              - step:
+                  type: BuildAndPushDockerRegistry
+                  name: BuildAndPushToDockerRegistry
+                  identifier: BuildAndPushToDockerRegistry
+                  spec:
+                    connectorRef: docker
+                    repo: afflato/exchangerates
+                    tags:
+                      - <+codebase.shortCommitSha>
+              - step:
+                  type: Run
+                  name: Update Image Tag
+                  identifier: Update_Image_Tag
+                  spec:
+                    shell: Sh
+                    command: |-
+                      set -e
+
+                      # --- DEBUGGING SECTION ---
+                      echo "--- 1. Current Environment ---"
+                      whoami
+                      pwd
+
+                      # echo "--- 2. Directory Structure (Recursive) ---"
+                      # # This will show us exactly where 'k8chart' lives
+                      # ls -R /harness
+
+                      echo "--- 3. Checking for Git Repository ---"
+                      if [ -d "/harness/.git" ]; then
+                          echo "SUCCESS: .git folder found in /harness"
+                      else
+                          echo "WARNING: .git folder NOT found in /harness. Git commands will fail."
+                      fi
+                      # -------------------------
+
+                      export IMAGE_TAG=<+codebase.shortCommitSha>
+
+                      # Find the file dynamically
+                      YAML_PATH=$(find /harness -name "values.yaml" | grep "k8chart" | head -n 1)
+
+                      if [ -z "$YAML_PATH" ]; then
+                          echo "ERROR: Could not find values.yaml inside a k8chart folder."
+                          exit 1
+                      fi
+
+                      echo "--- 4. Updating File: $YAML_PATH ---"
+                      sed -i "s|tag:.*|tag: ${IMAGE_TAG}|" "$YAML_PATH"
+
+                      # Move to where .git is located (usually /harness)
+                      cd /harness
+
+                      # Configure and Commit
+                      git config --global user.email "afflato-bot-ci@afflato.com"
+                      git config --global user.name "afflato-bot-ci"
+
+                      export GIT_PAT=<+secrets.getValue("token_classic")>
+                      git remote set-url origin https://afflato:${GIT_PAT}@github.com/afflato/exchangerates.git
+
+                      git add "$YAML_PATH"
+                      git commit -m "chore: update image tag to ${IMAGE_TAG} [skip ci]" || echo "No changes to commit"
+
+                      # Note: This will likely fail until we add the Token to the URL
+                      git push origin main
