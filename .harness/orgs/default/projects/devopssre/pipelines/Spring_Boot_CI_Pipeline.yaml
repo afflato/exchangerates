@@ -76,10 +76,10 @@ pipeline:
                           
                           sonar {
                               properties {
-                                  property "sonar.organization", "**************"
-                                  property "sonar.projectKey", "**************"
+                                  property "sonar.organization", "<+secrets.getValue('sonar_org')>"
+                                  property "sonar.projectKey", "<+secrets.getValue('sonar_project_key')>"
                                   property "sonar.host.url", "https://sonarcloud.io"
-                                  property "sonar.token", "**************"
+                                  property "sonar.token", "<+secrets.getValue('sonar_token')>"
                                   property "sonar.qualitygate.wait", "true"
                               }
                           }
