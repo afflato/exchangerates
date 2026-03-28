@@ -58,6 +58,9 @@ pipeline:
                     command: |-
                       set -e
 
+                      # 0. Install Git (Crucial for Sonar SCM sensor)
+                      apt-get update && apt-get install -y git || apk add git
+
                       # 1. Updated Init Script with the correct class reference
                       cat <<EOF > sonar-init.gradle
                       initscript {
