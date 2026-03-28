@@ -1,0 +1,15 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: exchangerate-vs
+spec:
+  hosts:
+    - "*"
+  gateways:
+    - exchangerate-gateway
+  http:
+    - route:
+        - destination:
+            host: exchangerate-service
+            port:
+              number: 8080 # Change to your app's internal port

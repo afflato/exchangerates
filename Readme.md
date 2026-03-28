@@ -33,6 +33,27 @@ kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.pas
 5. kubectl apply -f github-token.yaml
 6. kubectl apply -f dockerhub-token.yaml
 7. kubectl apply -f application.yaml
-8. 
+
+# Phase 1: Install Istio CLI and Control Plane
+Run these commands on your local machine (where kubectl is configured).
+ 1. Download Istio (latest version)
+curl -L https://istio.io/downloadIstio | sh -
+cd istio-*
+export PATH=$PWD/bin:$PATH
+
+ 2. Install Istio with the "demo" profile (includes Ingress Gateway)
+istioctl install --set profile=demo -y
+
+ 3. Enable Sidecar Injection for your default namespace
+ This tells Istio to automatically add the Envoy proxy to your 3 replicas
+kubectl label namespace default istio-injection=enabled
+
+4. Restart your deployment to "inject" the proxies
+kubectl rollout restart deployment exchangerates
+
+
+kubectl port-forward -n istio-system svc/istio-ingressgateway 8080:80
+
+kubectl get svc istio-ingressgateway -n istio-system
 
 
