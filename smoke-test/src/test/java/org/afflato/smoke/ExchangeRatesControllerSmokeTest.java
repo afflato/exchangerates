@@ -28,6 +28,18 @@ import static org.mockito.Mockito.when;
 )
 @ActiveProfiles("test")
 public class ExchangeRatesControllerSmokeTest {
+    public static final String DEFAULT_JSON_RESPONSE = """
+            {
+              "base": "USD",
+              "rates": {
+                "AED": 3.6725,
+                "JPY": 153.232404,
+                "USD": 1,
+                "INR": 84.109224
+              },
+              "last_updated": "2025-03-09T14:37:43.515+00:00"
+            }
+            """;
     @LocalServerPort
     private int port;
     private RestClient restClient;
@@ -45,7 +57,7 @@ public class ExchangeRatesControllerSmokeTest {
     }
 
     @Test
-    void should_return_status_code_200_ok_response_for_application_health_api() {
+    void shouldReturnStatusCode200OkResponseForApplicationHealthApi() {
         // Act: Using the fluent API
         ResponseEntity<String> response = restClient.get()
                 .uri("/actuator/health")
@@ -58,7 +70,7 @@ public class ExchangeRatesControllerSmokeTest {
     }
 
     @Test
-    void should_return_latest_exchange_rate_for_currency() {
+    void shouldReturnLatestExchangeRateForCurrency() {
 
         //Arrange
         String baseCurrency = "USD";
@@ -90,17 +102,6 @@ public class ExchangeRatesControllerSmokeTest {
     }
 
     private String jsonResponse() {
-        return """
-                {
-                  "base": "USD",
-                  "rates": {
-                    "AED": 3.6725,
-                    "JPY": 153.232404,
-                    "USD": 1,
-                    "INR": 84.109224
-                  },
-                  "last_updated": "2025-03-09T14:37:43.515+00:00"
-                }
-                """;
+        return DEFAULT_JSON_RESPONSE;
     }
 }

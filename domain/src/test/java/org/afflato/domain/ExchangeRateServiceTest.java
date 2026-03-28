@@ -19,7 +19,8 @@ public class ExchangeRateServiceTest {
     @InjectMocks private ExchangeRateService service;
 
     @Test
-    public void should_return_exchange_rate() throws InterruptedException {
+    public void shouldReturnExchangeRate() //throws InterruptedException
+    {
         // Arrange
         //Thread.sleep(1); 
 
