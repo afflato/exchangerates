@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -67,6 +68,33 @@ public class ExchangeRatesControllerSmokeTest {
         //Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertTrue(response.getBody().contains("\"status\":\"UP\""));
+    }
+
+    @Test
+    void shouldReturnInvalid400StatusCode() {
+        // Act: Using the fluent API
+        ResponseEntity<String> response = restClient.get()
+                .uri("/error/validation")
+                .retrieve()
+                .onStatus(HttpStatusCode::isError, (req, res) -> { })
+                .toEntity(String.class);
+
+        //Assert
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("Validation failed", response.getBody());
+    }
+
+    @Test
+    void shouldReturnUnknow500StatusCode() {
+        // Act: Using the fluent API
+        ResponseEntity<String> response = restClient.get()
+                .uri("/error/server")
+                .retrieve()
+                .onStatus(HttpStatusCode::isError, (req, res) -> { })
+                .toEntity(String.class);
+
+        // Assert
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
 
     @Test
