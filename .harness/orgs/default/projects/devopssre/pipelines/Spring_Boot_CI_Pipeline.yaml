@@ -72,11 +72,11 @@ pipeline:
                           }
                       }
 
-                      // We use the 'allProjects' hook but apply the CLASS, not the ID
-                      gradle.allprojects { project ->
-                          // We wrap this in a try/catch because only the root project needs the 'sonar' block
-                          try {
-                              project.apply plugin: org.sonarsource.scanner.gradle.SonarQubePlugin
+                      // This hook triggers as soon as the project is ready
+                      gradle.projectsLoaded { 
+                          rootProject.allprojects { project ->
+                              // We use the full String name to bypass all classloader issues
+                              project.apply plugin: "org.sonarqube"
                               
                               if (project == project.rootProject) {
                                   project.sonar {
@@ -91,8 +91,6 @@ pipeline:
                                       }
                                   }
                               }
-                          } catch (Exception e) {
-                              // Silently skip subprojects that can't load the plugin class
                           }
                       }
                       EOF
