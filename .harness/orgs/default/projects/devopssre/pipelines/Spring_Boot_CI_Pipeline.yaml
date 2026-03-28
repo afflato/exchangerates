@@ -72,15 +72,18 @@ pipeline:
 
                       allprojects {
                           // Apply using the String ID to avoid 'unknown property org' errors
-                          apply(type: org.sonarsource.scanner.gradle.SonarQubePlugin)
+                          def pluginClass = Class.forName("org.sonarsource.scanner.gradle.SonarQubePlugin")
+                          apply plugin: pluginClass
                           
-                          sonar {
-                              properties {
-                                  property "sonar.organization", "<+secrets.getValue('sonar_org')>"
-                                  property "sonar.projectKey", "<+secrets.getValue('sonar_project_key')>"
-                                  property "sonar.host.url", "https://sonarcloud.io"
-                                  property "sonar.token", "<+secrets.getValue('sonar_token')>"
-                                  property "sonar.qualitygate.wait", "true"
+                          configure(rootProject) {
+                              extensions.findByName("sonar")?.with {
+                                  properties {
+                                      property "sonar.organization", "<+secrets.getValue('sonar_org')>"
+                                      property "sonar.projectKey", "<+secrets.getValue('sonar_project_key')>"
+                                      property "sonar.host.url", "https://sonarcloud.io"
+                                      property "sonar.token", "<+secrets.getValue('sonar_token')>"
+                                      property "sonar.qualitygate.wait", "true"
+                                  }
                               }
                           }
                       }
