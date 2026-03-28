@@ -3,7 +3,8 @@ package org.afflato.rest;
 import lombok.RequiredArgsConstructor;
 import org.afflato.domain.ExchangeRate;
 import org.afflato.domain.ExchangeRateService;
-import org.springframework.util.StringUtils;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
@@ -15,9 +16,19 @@ public class ExchangeRateController {
     private final ExchangeRateService exchangeRateService;
 
     @GetMapping("/latest/{currency}")
-    public ExchangeRate getData(@PathVariable String currency) {
+    public ResponseEntity<ExchangeRate> getData(@PathVariable String currency) {
         currency = USD.equals(currency) ? currency : USD;
-        return exchangeRateService.getExchangeRate(currency);
+        return ResponseEntity.ok(exchangeRateService.getExchangeRate(currency));
+    }
+
+    @GetMapping("/error/validation")
+    public ResponseEntity<String> validation() {
+        return new ResponseEntity<>("Validation failed", HttpStatus.BAD_REQUEST);
+    }
+
+    @GetMapping("/error/server")
+    public ResponseEntity<String> unhandled(@PathVariable String currency) {
+        return new ResponseEntity<>("Unknown Exception Occurred", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
 }
