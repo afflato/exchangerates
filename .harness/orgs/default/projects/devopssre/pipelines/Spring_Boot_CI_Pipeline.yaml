@@ -169,7 +169,7 @@ pipeline:
                     connectorRef: docker
                     repo: afflato/exchangerates
                     tags:
-                      - "<+codebase.shortCommitSha != null ? codebase.shortCommitSha : \"manual-\" + pipeline.sequenceId>"
+                      - <+"manual-" + pipeline.sequenceId>
                     caching: true
               - step:
                   type: Run
@@ -205,11 +205,13 @@ pipeline:
                       PIPELINE_ID="<+pipeline.sequenceId>"
 
                       # 2. Use a standard shell 'if' check
-                      if [ -n "$COMMIT_SHA" ]; then
-                          export IMAGE_TAG="$COMMIT_SHA"
-                      else
-                          export IMAGE_TAG="manual-$PIPELINE_ID"
-                      fi
+                      # if [ -n "$COMMIT_SHA" ]; then
+                      #     export IMAGE_TAG="$COMMIT_SHA"
+                      # else
+                      #     export IMAGE_TAG="manual-$PIPELINE_ID"
+                      # fi
+
+                      export IMAGE_TAG="manual-$PIPELINE_ID"
 
                       echo "Resolved IMAGE_TAG: $IMAGE_TAG"
 
