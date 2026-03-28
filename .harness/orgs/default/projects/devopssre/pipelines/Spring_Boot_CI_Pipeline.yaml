@@ -76,6 +76,9 @@ pipeline:
                       }
                       EOF
 
+                      git log -1 --oneline  # See the latest commit in the workspace
+                      find . -name "*.java" -mmin -5 # See which files were modified in the last 5 minutes
+
                       # 2. Run your tests
                       chmod +x gradlew
                       ./gradlew clean test --continue
@@ -83,6 +86,7 @@ pipeline:
                       # 3. Run sonar AND point to the init script (The missing piece)
                       ./gradlew sonar \
                         --init-script sonar-init.gradle \
+                        -Dsonar.qualitygate.wait=true
                         --info \
                         --stacktrace \
                         -Dsonar.projectKey=<+secrets.getValue("sonar_project_key")> \
