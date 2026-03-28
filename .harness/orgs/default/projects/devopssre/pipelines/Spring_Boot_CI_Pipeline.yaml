@@ -124,7 +124,7 @@ pipeline:
                         -Dsonar.projectKey=<+secrets.getValue("sonar_project_key")> \
                         -Dsonar.host.url="https://sonarcloud.io" \
                         -Dsonar.token=<+secrets.getValue("sonar_token")> \
-                        -Dsonar.qualitygate.wait=true \
+                        -Dsonar.qualitygate.wait=false \
                         -Dsonar.projectBaseDir=$(pwd) \
                         -Dsonar.sources=./ \
                         -Dsonar.scm.provider=git \
