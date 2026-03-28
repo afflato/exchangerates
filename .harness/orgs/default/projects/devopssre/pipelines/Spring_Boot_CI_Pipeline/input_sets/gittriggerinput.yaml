@@ -1,0 +1,15 @@
+inputSet:
+  name: git-trigger-input
+  identifier: gittriggerinput
+  description: Standard input for branch triggers
+  orgIdentifier: default
+  projectIdentifier: devopssre
+  pipeline:
+    identifier: Spring_Boot_CI_Pipeline
+    properties:
+      ci:
+        codebase:
+          build:
+            type: branch
+            spec:
+              branch: <+trigger.branch>
