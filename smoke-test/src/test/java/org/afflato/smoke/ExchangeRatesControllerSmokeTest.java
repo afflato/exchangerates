@@ -71,7 +71,7 @@ public class ExchangeRatesControllerSmokeTest {
     }
 
     @Test
-    @SuppressWarnings
+    @SuppressWarnings("all")
     void shouldReturnInvalid400StatusCode() {
         // Act: Using the fluent API
         ResponseEntity<String> response = restClient.get()
@@ -86,7 +86,7 @@ public class ExchangeRatesControllerSmokeTest {
     }
 
     @Test
-    @SuppressWarnings
+    @SuppressWarnings("all")
     void shouldReturnUnknow500StatusCode() {
         // Act: Using the fluent API
         ResponseEntity<String> response = restClient.get()
