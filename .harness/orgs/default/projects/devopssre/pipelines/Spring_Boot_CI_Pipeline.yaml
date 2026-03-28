@@ -111,7 +111,7 @@ pipeline:
                     connectorRef: docker
                     repo: afflato/exchangerates
                     tags:
-                      - "<+codebase.shortCommitSha> ?: \"manual-<+pipeline.sequenceId>"
+                      - "<+codebase.shortCommitSha> ?: (\"manual-\" + <+pipeline.sequenceId>)"
               - step:
                   type: Run
                   name: Update Image Tag
