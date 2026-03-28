@@ -66,13 +66,13 @@ pipeline:
                       initscript {
                           repositories { maven { url "https://plugins.gradle.org/m2/" } }
                           dependencies { 
-                              classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:7.0.1.6134" 
+                              classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:7.2.3.7755"
                           }
                       }
 
                       allprojects {
                           // Apply using the String ID to avoid 'unknown property org' errors
-                          apply plugin: "org.sonarsource.scanner.gradle.sonarqube"
+                          apply plugin: "org.sonarsource.scanner.gradle.SonarQubePlugin"
                           
                           sonar {
                               properties {
