@@ -180,6 +180,8 @@ pipeline:
                     command: |-
                       set -e
 
+                      apk add --no-cache bash git libc6-compat
+
                       # --- DEBUGGING SECTION ---
                       echo "--- 1. Current Environment ---"
                       whoami
@@ -197,7 +199,7 @@ pipeline:
                       fi
                       # -------------------------
 
-                      export IMAGE_TAG=${<+codebase.shortCommitSha> ?: ("manual-" + <+pipeline.sequenceId>)}
+                      export IMAGE_TAG=${<+codebase.shortCommitSha> ? <+codebase.shortCommitSha> : ("manual-" + <+pipeline.sequenceId>)}
 
                       # Find the file dynamically
                       YAML_PATH=$(find /harness -name "values.yaml" | grep "k8chart" | head -n 1)
