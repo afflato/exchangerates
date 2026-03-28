@@ -72,7 +72,7 @@ pipeline:
 
                       allprojects {
                           // Apply using the String ID to avoid 'unknown property org' errors
-                          apply plugin: "org.sonarsource.scanner.gradle.SonarQubePlugin"
+                          apply(type: org.sonarsource.scanner.gradle.SonarQubePlugin)
                           
                           sonar {
                               properties {
