@@ -70,20 +70,32 @@ pipeline:
                           }
                       }
 
-                      rootProject {
-                          // Apply using the String ID to avoid 'unknown property org' errors
-                          buildscript.configurations.classpath.extendsFrom(initscript.configurations.classpath)
-                          apply plugin: "org.sonarqube"
+                      def sonarFiles = initscript.configurations.classpath.files
+
+                      allprojects { project ->
+                          // Inject the JARs into each project's buildscript
+                          project.buildscript {
+                              dependencies {
+                                  classpath project.files(sonarFiles)
+                              }
+                          }
+
+                          // Apply the plugin using the now-available JARs
+                          project.apply plugin: "org.sonarqube"
+
+                          // Configuration for the root project
+                          if (project == rootProject) {
                           
-                          sonar {
-                              properties {
-                                  property "sonar.organization", "<+secrets.getValue('sonar_org')>"
-                                  property "sonar.projectKey", "<+secrets.getValue('sonar_project_key')>"
-                                  property "sonar.host.url", "https://sonarcloud.io"
-                                  property "sonar.token", "<+secrets.getValue('sonar_token')>"
-                                  property "sonar.qualitygate.wait", "true"
-                                  property "sonar.java.source", "25"
-                                  property "sonar.java.target", "25"
+                              sonar {
+                                  properties {
+                                      property "sonar.organization", "<+secrets.getValue('sonar_org')>"
+                                      property "sonar.projectKey", "<+secrets.getValue('sonar_project_key')>"
+                                      property "sonar.host.url", "https://sonarcloud.io"
+                                      property "sonar.token", "<+secrets.getValue('sonar_token')>"
+                                      property "sonar.qualitygate.wait", "true"
+                                      property "sonar.java.source", "25"
+                                      property "sonar.java.target", "25"
+                                  }
                               }
                           }
                           
