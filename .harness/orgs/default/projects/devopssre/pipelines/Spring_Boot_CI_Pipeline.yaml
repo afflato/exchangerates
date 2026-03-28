@@ -84,6 +84,8 @@ pipeline:
                       }
                       EOF
 
+                      cat sonar-init.gradle
+
                       git log -1 --oneline  # See the latest commit in the workspace
                       find . -name "*.java" -mmin -5 # See which files were modified in the last 5 minutes
 
