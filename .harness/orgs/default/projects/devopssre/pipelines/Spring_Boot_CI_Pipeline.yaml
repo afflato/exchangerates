@@ -63,41 +63,40 @@ pipeline:
 
                       # 1. Updated Init Script with the correct class reference
                       cat <<EOF > sonar-init.gradle
-                      initscript {
-                          repositories { maven { url "https://plugins.gradle.org/m2/" } }
-                          dependencies { 
-                              classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:7.2.3.7755"
+                      // 1. Tell Gradle where to find the plugin globally
+                      gradle.settingsEvaluated { settings ->
+                          settings.pluginManagement {
+                              repositories {
+                                  maven { url "https://plugins.gradle.org/m2/" }
+                                  gradlePluginPortal()
+                              }
                           }
                       }
 
-                      def sonarFiles = initscript.configurations.classpath.files
-
-                      allprojects { project ->
-                          // Inject the JARs into each project's buildscript
-                          project.buildscript {
-                              dependencies {
-                                  classpath project.files(sonarFiles)
+                      // 2. Apply the plugin to the root project specifically
+                      gradle.rootProject { root ->
+                          root.initscript {
+                              repositories { maven { url "https://plugins.gradle.org/m2/" } }
+                              dependencies { 
+                                  classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:7.2.3.7755" 
                               }
                           }
 
-                          // Apply the plugin using the now-available JARs
-                          project.apply plugin: "org.sonarqube"
+                          // Use the exact class name reference again, but inside the root context
+                          root.apply plugin: org.sonarsource.scanner.gradle.SonarQubePlugin
 
-                          // Configuration for the root project
-                          if (project == rootProject) {
+                          root.sonar {
+                              properties {
+                                  property "sonar.organization", "<+secrets.getValue('sonar_org')>"
+                                  property "sonar.projectKey", "<+secrets.getValue('sonar_project_key')>"
+                                  property "sonar.host.url", "https://sonarcloud.io"
+                                  property "sonar.token", "<+secrets.getValue('sonar_token')>"
+                                  property "sonar.qualitygate.wait", "true"
+                                  property "sonar.java.source", "25"
+                                  property "sonar.java.target", "25"
+                              }
+                          }
                           
-                              sonar {
-                                  properties {
-                                      property "sonar.organization", "<+secrets.getValue('sonar_org')>"
-                                      property "sonar.projectKey", "<+secrets.getValue('sonar_project_key')>"
-                                      property "sonar.host.url", "https://sonarcloud.io"
-                                      property "sonar.token", "<+secrets.getValue('sonar_token')>"
-                                      property "sonar.qualitygate.wait", "true"
-                                      property "sonar.java.source", "25"
-                                      property "sonar.java.target", "25"
-                                  }
-                              }
-                          }
                           
                       }
                       EOF
