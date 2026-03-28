@@ -63,7 +63,6 @@ pipeline:
 
                       # 1. Updated Init Script with the correct class reference
                       cat <<EOF > sonar-init.gradle
-                      // 1. Define the plugin at the script level
                       initscript {
                           repositories { 
                               maven { url "https://plugins.gradle.org/m2/" } 
@@ -73,26 +72,28 @@ pipeline:
                           }
                       }
 
-                      // 2. Apply it to the root project
-                      gradle.rootProject { root ->
-                          // We use the full class name. No quotes.
-                          // This works because the initscript block above loaded the JAR.
-                          //root.apply plugin: org.sonarsource.scanner.gradle.SonarQubePlugin
-                          root.apply plugin: "org.sonarqube"
-
-                          root.sonar {
-                              properties {
-                                  property "sonar.organization", "<+secrets.getValue('sonar_org')>"
-                                  property "sonar.projectKey", "<+secrets.getValue('sonar_project_key')>"
-                                  property "sonar.host.url", "https://sonarcloud.io"
-                                  property "sonar.token", "<+secrets.getValue('sonar_token')>"
-                                  property "sonar.qualitygate.wait", "true"
-                                  property "sonar.java.source", "25"
-                                  property "sonar.java.target", "25"
+                      // We use the 'allProjects' hook but apply the CLASS, not the ID
+                      gradle.allprojects { project ->
+                          // We wrap this in a try/catch because only the root project needs the 'sonar' block
+                          try {
+                              project.apply plugin: org.sonarsource.scanner.gradle.SonarQubePlugin
+                              
+                              if (project == project.rootProject) {
+                                  project.sonar {
+                                      properties {
+                                          property "sonar.organization", "<+secrets.getValue('sonar_org')>"
+                                          property "sonar.projectKey", "<+secrets.getValue('sonar_project_key')>"
+                                          property "sonar.host.url", "https://sonarcloud.io"
+                                          property "sonar.token", "<+secrets.getValue('sonar_token')>"
+                                          property "sonar.qualitygate.wait", "true"
+                                          property "sonar.java.source", "25"
+                                          property "sonar.java.target", "25"
+                                      }
+                                  }
                               }
+                          } catch (Exception e) {
+                              // Silently skip subprojects that can't load the plugin class
                           }
-                          
-                          
                       }
                       EOF
 
