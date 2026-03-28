@@ -70,7 +70,7 @@ pipeline:
                           }
                       }
 
-                      allprojects {
+                      rootProject {
                           // Apply using the String ID to avoid 'unknown property org' errors
                           buildscript.configurations.classpath.extendsFrom(initscript.configurations.classpath)
                           apply plugin: "org.sonarqube"
