@@ -93,6 +93,17 @@ pipeline:
                         -Dsonar.java.target=25 \
                         -Dsonar.scm.provider=git
               - step:
+                  type: Run
+                  name: TagInfo
+                  identifier: TagInfo
+                  spec:
+                    shell: Sh
+                    command: |-
+                      echo "Short Commit SHA: <+codebase.shortCommitSha>"
+                      echo "Full Commit SHA: <+codebase.commitSha>"
+                      echo "Trigger Type: <+pipeline.triggerType>"
+                      echo "Branch: <+codebase.branch>"
+              - step:
                   type: BuildAndPushDockerRegistry
                   name: BuildAndPushToDockerRegistry
                   identifier: BuildAndPushToDockerRegistry
@@ -100,7 +111,7 @@ pipeline:
                     connectorRef: docker
                     repo: afflato/exchangerates
                     tags:
-                      - <+codebase.shortCommitSha>
+                      - "<+codebase.shortCommitSha> ?: \"manual-<+pipeline.sequenceId>"
               - step:
                   type: Run
                   name: Update Image Tag
