@@ -21,11 +21,13 @@ public class ExchangeRateController {
         return ResponseEntity.ok(exchangeRateService.getExchangeRate(currency));
     }
 
+    @SuppressWarnings
     @GetMapping("/error/validation")
     public ResponseEntity<String> validation() {
         return new ResponseEntity<>("Validation failed", HttpStatus.BAD_REQUEST);
     }
 
+    @SuppressWarnings
     @GetMapping("/error/server")
     public ResponseEntity<String> unhandled(@PathVariable String currency) {
         return new ResponseEntity<>("Unknown Exception Occurred", HttpStatus.INTERNAL_SERVER_ERROR);
