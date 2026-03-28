@@ -64,18 +64,23 @@ pipeline:
                       # 1. Updated Init Script with the correct class reference
                       cat <<EOF > sonar-init.gradle
                       initscript {
-                          repositories {
-                              maven { url "https://plugins.gradle.org/m2/" }
-                          }
-                          dependencies {
-                              // Version 7.x is required for Gradle 9.x compatibility
-                              classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:7.0.1.6134"
-                          }
+                          repositories { maven { url "https://plugins.gradle.org/m2/" } }
+                          dependencies { classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:7.0.1.6134" }
                       }
 
                       allprojects {
-                          // We apply it using the class name to ensure it loads in the init scope
-                          apply plugin: org.sonarqube.gradle.SonarQubePlugin
+                          apply plugin: org.sonarsource.scanner.gradle.SonarQubePlugin
+                          
+                          // This block ensures the properties are hard-coded into the task config
+                          sonar {
+                              properties {
+                                  property "sonar.organization", "<+secrets.getValue('sonar_org')>"
+                                  property "sonar.projectKey", "<+secrets.getValue('sonar_project_key')>"
+                                  property "sonar.host.url", "https://sonarcloud.io"
+                                  property "sonar.token", "<+secrets.getValue('sonar_token')>"
+                                  property "sonar.qualitygate.wait", "true"
+                              }
+                          }
                       }
                       EOF
 
