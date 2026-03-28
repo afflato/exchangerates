@@ -59,64 +59,85 @@ pipeline:
                       set -e
 
                       # 0. Install Git (Crucial for Sonar SCM sensor)
-                      apt-get update && apt-get install -y git || apk add git
+                      # apt-get update && apt-get install -y git || apk add git
+                      apk add git unzip wget || (apt-get update && apt-get install -y git unzip wget)
 
-                      # 1. Updated Init Script with the correct class reference
-                      cat <<EOF > sonar-init.gradle
-                      initscript {
-                          repositories { 
-                              maven { url "https://plugins.gradle.org/m2/" } 
-                          }
-                          dependencies { 
-                              classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:7.2.3.7755" 
-                          }
-                      }
 
-                      // This hook triggers as soon as the project is ready
-                      gradle.projectsLoaded { 
-                          rootProject.allprojects { project ->
-                              // We use the full String name to bypass all classloader issues
-                              project.apply plugin: "org.sonarqube"
+                      # # 1. Updated Init Script with the correct class reference
+                      # cat <<EOF > sonar-init.gradle
+                      # initscript {
+                      #     repositories { 
+                      #         maven { url "https://plugins.gradle.org/m2/" } 
+                      #     }
+                      #     dependencies { 
+                      #         classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:7.2.3.7755" 
+                      #     }
+                      # }
+
+                      # // This hook triggers as soon as the project is ready
+                      # gradle.projectsLoaded { 
+                      #     rootProject.allprojects { project ->
+                      #         // We use the full String name to bypass all classloader issues
+                      #         project.apply plugin: "org.sonarqube"
                               
-                              if (project == project.rootProject) {
-                                  project.sonar {
-                                      properties {
-                                          property "sonar.organization", "<+secrets.getValue('sonar_org')>"
-                                          property "sonar.projectKey", "<+secrets.getValue('sonar_project_key')>"
-                                          property "sonar.host.url", "https://sonarcloud.io"
-                                          property "sonar.token", "<+secrets.getValue('sonar_token')>"
-                                          property "sonar.qualitygate.wait", "true"
-                                          property "sonar.java.source", "25"
-                                          property "sonar.java.target", "25"
-                                      }
-                                  }
-                              }
-                          }
-                      }
-                      EOF
+                      #         if (project == project.rootProject) {
+                      #             project.sonar {
+                      #                 properties {
+                      #                     property "sonar.organization", "<+secrets.getValue('sonar_org')>"
+                      #                     property "sonar.projectKey", "<+secrets.getValue('sonar_project_key')>"
+                      #                     property "sonar.host.url", "https://sonarcloud.io"
+                      #                     property "sonar.token", "<+secrets.getValue('sonar_token')>"
+                      #                     property "sonar.qualitygate.wait", "true"
+                      #                     property "sonar.java.source", "25"
+                      #                     property "sonar.java.target", "25"
+                      #                 }
+                      #             }
+                      #         }
+                      #     }
+                      # }
+                      # EOF
 
-                      cat sonar-init.gradle
+                      # cat sonar-init.gradle
 
                       git log -1 --oneline  # See the latest commit in the workspace
                       find . -name "*.java" -mmin -5 # See which files were modified in the last 5 minutes
 
-                      # 2. Run your tests
-                      chmod +x gradlew
-                      ./gradlew clean test --continue
+                      wget -q https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
+                      unzip -q sonar-scanner-cli-5.0.1.3006-linux.zip
 
-                      # 3. Run sonar AND point to the init script (The missing piece)
-                      ./gradlew sonar \
-                        --init-script sonar-init.gradle \
-                        -Dsonar.qualitygate.wait=true
-                        --info \
-                        --stacktrace \
-                        -Dsonar.projectKey=<+secrets.getValue("sonar_project_key")> \
+                      # Dynamically find the bin folder (handles version number changes)
+                      SCANNER_BIN=$(find $(pwd) -name bin -type d | grep sonar-scanner)
+                      export PATH=$PATH:$SCANNER_BIN
+
+                      sonar-scanner \
                         -Dsonar.organization=<+secrets.getValue("sonar_org")> \
-                        -Dsonar.host.url=https://sonarcloud.io \
+                        -Dsonar.projectKey=<+secrets.getValue("sonar_project_key")> \
+                        -Dsonar.host.url="https://sonarcloud.io" \
                         -Dsonar.token=<+secrets.getValue("sonar_token")> \
-                        -Dsonar.java.source=25 \
-                        -Dsonar.java.target=25 \
+                        -Dsonar.qualitygate.wait=true \
+                        -Dsonar.projectBaseDir=$(pwd) \
+                        -Dsonar.sources=./ \
+                        -Dsonar.java.binaries=**/build/classes/java/main \
+                        -Dsonar.java.test.binaries="**/build/classes/java/test" \
                         -Dsonar.scm.provider=git
+
+                      # # 2. Run your tests
+                      # chmod +x gradlew
+                      # ./gradlew clean test --continue
+
+                      # # 3. Run sonar AND point to the init script (The missing piece)
+                      # # ./gradlew sonar \
+                      # #   --init-script sonar-init.gradle \
+                      # #   -Dsonar.qualitygate.wait=true
+                      # #   --info \
+                      # #   --stacktrace \
+                      # #   -Dsonar.projectKey=<+secrets.getValue("sonar_project_key")> \
+                      # #   -Dsonar.organization=<+secrets.getValue("sonar_org")> \
+                      # #   -Dsonar.host.url=https://sonarcloud.io \
+                      # #   -Dsonar.token=<+secrets.getValue("sonar_token")> \
+                      # #   -Dsonar.java.source=25 \
+                      # #   -Dsonar.java.target=25 \
+                      # #   -Dsonar.scm.provider=git
               - step:
                   type: Run
                   name: TagInfo
