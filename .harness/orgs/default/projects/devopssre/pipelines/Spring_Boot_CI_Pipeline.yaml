@@ -199,7 +199,19 @@ pipeline:
                       fi
                       # -------------------------
 
-                      export IMAGE_TAG=${<+codebase.shortCommitSha> ? <+codebase.shortCommitSha> : ("manual-" + <+pipeline.sequenceId>)}
+                      # export IMAGE_TAG=${<+codebase.shortCommitSha> ? <+codebase.shortCommitSha> : ("manual-" + <+pipeline.sequenceId>)}
+
+                      COMMIT_SHA="<+codebase.shortCommitSha>"
+                      PIPELINE_ID="<+pipeline.sequenceId>"
+
+                      # 2. Use a standard shell 'if' check
+                      if [ -n "$COMMIT_SHA" ]; then
+                          export IMAGE_TAG="$COMMIT_SHA"
+                      else
+                          export IMAGE_TAG="manual-$PIPELINE_ID"
+                      fi
+
+                      echo "Resolved IMAGE_TAG: $IMAGE_TAG"
 
                       # Find the file dynamically
                       YAML_PATH=$(find /harness -name "values.yaml" | grep "k8chart" | head -n 1)
