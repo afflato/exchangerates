@@ -60,7 +60,8 @@ pipeline:
 
                       # 0. Install Git (Crucial for Sonar SCM sensor)
                       # apt-get update && apt-get install -y git || apk add git
-                      apk add git unzip wget || (apt-get update && apt-get install -y git unzip wget)
+                      # apk add git unzip wget || (apt-get update && apt-get install -y git unzip wget)
+                      apk add --no-cache git unzip wget libc6-compat
 
 
                       # # 1. Updated Init Script with the correct class reference
@@ -102,12 +103,21 @@ pipeline:
                       git log -1 --oneline  # See the latest commit in the workspace
                       find . -name "*.java" -mmin -5 # See which files were modified in the last 5 minutes
 
-                      wget -q https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
-                      unzip -q sonar-scanner-cli-5.0.1.3006-linux.zip
+                      # wget -q https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
+                      # unzip -q sonar-scanner-cli-5.0.1.3006-linux.zip
+
+                      wget -q https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006.zip
+                      unzip -q sonar-scanner-cli-5.0.1.3006.zip
 
                       # Dynamically find the bin folder (handles version number changes)
-                      SCANNER_BIN=$(find $(pwd) -name bin -type d | grep sonar-scanner)
-                      export PATH=$PATH:$SCANNER_BIN
+                      # SCANNER_BIN=$(find $(pwd) -name bin -type d | grep sonar-scanner)
+                      # export PATH=$PATH:$SCANNER_BIN
+
+                      SCANNER_DIR=$(ls -d sonar-scanner-5.0.1.3006*)
+                      export PATH="$PATH:$(pwd)/$SCANNER_DIR/bin"
+
+                      java -version
+                      sonar-scanner -v
 
                       sonar-scanner \
                         -Dsonar.organization=<+secrets.getValue("sonar_org")> \
@@ -118,7 +128,7 @@ pipeline:
                         -Dsonar.projectBaseDir=$(pwd) \
                         -Dsonar.sources=./ \
                         -Dsonar.java.binaries=**/build/classes/java/main \
-                        -Dsonar.java.test.binaries="**/build/classes/java/test" \
+                        # -Dsonar.java.test.binaries="**/build/classes/java/test" \
                         -Dsonar.scm.provider=git
 
                       # # 2. Run your tests
