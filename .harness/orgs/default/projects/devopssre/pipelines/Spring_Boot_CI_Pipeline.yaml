@@ -169,7 +169,7 @@ pipeline:
                     connectorRef: docker
                     repo: afflato/exchangerates
                     tags:
-                      - "${<+codebase.shortCommitSha> ?: (\"manual-\" + <+pipeline.sequenceId>)}"
+                      - "exchangerates:<+codebase.shortCommitSha != null ? codebase.shortCommitSha : \"manual-\" + pipeline.sequenceId>"
                     caching: true
               - step:
                   type: Run
