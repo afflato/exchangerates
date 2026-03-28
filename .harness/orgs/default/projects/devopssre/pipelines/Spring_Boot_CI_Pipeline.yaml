@@ -127,11 +127,11 @@ pipeline:
                         -Dsonar.qualitygate.wait=true \
                         -Dsonar.projectBaseDir=$(pwd) \
                         -Dsonar.sources=./ \
+                        -Dsonar.scm.provider=git \
                         -Dsonar.java.binaries=**/build/classes/java/main \
                         -Dsonar.inclusions="**/src/main/java/**,**/src/main/resources/**,**/src/test/java/**,**/src/test/resources/**" \
                         -Dsonar.exclusions="**/charts/**,**/*.yaml,**/*.yml,**/ci/**"
                         # -Dsonar.java.test.binaries="**/build/classes/java/test" \
-                        -Dsonar.scm.provider=git
 
                       # # 2. Run your tests
                       # chmod +x gradlew
