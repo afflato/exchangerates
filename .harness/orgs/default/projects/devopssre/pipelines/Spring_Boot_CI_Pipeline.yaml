@@ -77,7 +77,8 @@ pipeline:
                       gradle.rootProject { root ->
                           // We use the full class name. No quotes.
                           // This works because the initscript block above loaded the JAR.
-                          root.apply plugin: org.sonarsource.scanner.gradle.SonarQubePlugin
+                          //root.apply plugin: org.sonarsource.scanner.gradle.SonarQubePlugin
+                          root.apply plugin: "org.sonarqube"
 
                           root.sonar {
                               properties {
