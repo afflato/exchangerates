@@ -169,7 +169,7 @@ pipeline:
                     connectorRef: docker
                     repo: afflato/exchangerates
                     tags:
-                      - <+"manual-" + pipeline.sequenceId>
+                      - <+"build-" + pipeline.sequenceId>
                     caching: true
               - step:
                   type: Run
@@ -211,7 +211,7 @@ pipeline:
                       #     export IMAGE_TAG="manual-$PIPELINE_ID"
                       # fi
 
-                      export IMAGE_TAG="manual-$PIPELINE_ID"
+                      export IMAGE_TAG="build-$PIPELINE_ID"
 
                       echo "Resolved IMAGE_TAG: $IMAGE_TAG"
 
