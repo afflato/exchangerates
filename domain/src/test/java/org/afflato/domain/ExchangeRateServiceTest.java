@@ -19,10 +19,10 @@ public class ExchangeRateServiceTest {
     @InjectMocks private ExchangeRateService service;
 
     @Test
-    public void shouldReturnExchangeRate() //throws InterruptedException
+    public void shouldReturnExchangeRate() throws InterruptedException
     {
         // Arrange
-        //Thread.sleep(1); 
+        Thread.sleep(1); 
 
         String baseCurrency = "USD";
         ExchangeRate expectedExchangeRate = getExchangeRate();
