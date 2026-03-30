@@ -22,7 +22,7 @@ public class ExchangeRateServiceTest {
     public void shouldReturnExchangeRate() throws InterruptedException
     {
         // Arrange
-        //Thread.sleep(1); 
+        Thread.sleep(1); 
 
         String baseCurrency = "USD";
         ExchangeRate expectedExchangeRate = getExchangeRate();
